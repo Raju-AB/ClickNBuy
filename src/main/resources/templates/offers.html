@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers &amp; Deals - ClickNBuy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f2f5;--card-bg:#fff;--text:#111827;--text-muted:#6b7280;--border:#e5e7eb;--primary:#4F46E5;--primary-hover:#4338CA;--accent:#F59E0B;--danger:#EF4444;--success:#10B981;--nav-bg:linear-gradient(135deg,#4F46E5,#7C3AED)}
+[data-theme="dark"]{--bg:#0f172a;--card-bg:#1e293b;--text:#f1f5f9;--text-muted:#94a3b8;--border:#334155;--nav-bg:linear-gradient(135deg,#1e1b4b,#312e81)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);transition:all .3s}
+.navbar{background:var(--nav-bg);padding:1rem 0;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.navbar-brand{font-weight:800;font-size:1.5rem;color:#fff!important}
+.nav-btn{border-radius:50px;padding:.4rem 1rem;font-weight:500;font-size:.875rem;transition:all .2s}
+
+/* Flash Sale Banner */
+.flash-banner{background:linear-gradient(135deg,#ef4444,#f97316,#eab308);padding:3rem 0;position:relative;overflow:hidden}
+.flash-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/svg%3E")}
+.flash-title{font-size:2.5rem;font-weight:900;color:#fff;text-shadow:2px 2px 8px rgba(0,0,0,.3)}
+.flash-sub{color:rgba(255,255,255,.9);font-size:1.1rem}
+.countdown{display:flex;gap:.75rem;justify-content:center;margin-top:1.5rem}
+.countdown-box{background:rgba(0,0,0,.3);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:.75rem 1rem;min-width:70px;text-align:center;color:#fff}
+.countdown-box .num{font-size:1.75rem;font-weight:800;line-height:1}
+.countdown-box .label{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;opacity:.8}
+
+/* Theme Toggle */
+.theme-toggle{position:fixed;bottom:2rem;right:2rem;z-index:1000;width:50px;height:50px;border-radius:50%;border:none;background:var(--primary);color:#fff;font-size:1.25rem;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);transition:all .3s}
+.theme-toggle:hover{transform:scale(1.1)}
+
+/* Category Pills */
+.cat-section{padding:2rem 0}
+.cat-pill{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:50px;background:var(--card-bg);border:1px solid var(--border);color:var(--text);font-weight:600;text-decoration:none;transition:all .3s;cursor:pointer}
+.cat-pill:hover,.cat-pill.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-3px);box-shadow:0 8px 25px rgba(79,70,229,.3)}
+.cat-pill i{font-size:1.25rem}
+
+/* Offer Cards */
+.offers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;padding:2rem 0}
+.offer-card{background:var(--card-bg);border-radius:1rem;overflow:hidden;border:1px solid var(--border);transition:all .4s cubic-bezier(.25,.8,.25,1);position:relative;animation:fadeUp .6s ease both}
+.offer-card:nth-child(2){animation-delay:.1s}
+.offer-card:nth-child(3){animation-delay:.2s}
+.offer-card:nth-child(4){animation-delay:.3s}
+.offer-card:nth-child(5){animation-delay:.4s}
+.offer-card:nth-child(6){animation-delay:.5s}
+.offer-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,.12)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.card-banner{padding:2rem;color:#fff;position:relative;min-height:160px;display:flex;flex-direction:column;justify-content:center}
+.card-banner.electronics{background:linear-gradient(135deg,#667eea,#764ba2)}
+.card-banner.fashion{background:linear-gradient(135deg,#f093fb,#f5576c)}
+.card-banner.shoes{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.card-banner.grocery{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+.card-banner.bogo{background:linear-gradient(135deg,#fa709a,#fee140)}
+.card-banner.mega{background:linear-gradient(135deg,#a18cd1,#fbc2eb)}
+.card-banner.flash{background:linear-gradient(135deg,#ff6a00,#ee0979)}
+.card-banner.weekend{background:linear-gradient(135deg,#0250c5,#d43f8d)}
+.discount-badge{position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);padding:.4rem .8rem;border-radius:50px;font-weight:700;font-size:.8rem}
+.card-banner h3{font-weight:800;font-size:1.4rem;margin-bottom:.25rem}
+.card-banner p{opacity:.9;font-size:.9rem;margin:0}
+.card-body-custom{padding:1.25rem}
+.coupon-row{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+.coupon-code{background:var(--bg);border:2px dashed var(--primary);padding:.4rem .75rem;border-radius:8px;font-family:monospace;font-weight:700;font-size:.9rem;letter-spacing:1px;color:var(--primary);flex:1;text-align:center}
+.copy-btn{background:var(--primary);color:#fff;border:none;padding:.4rem .75rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s;white-space:nowrap}
+.copy-btn:hover{background:var(--primary-hover)}
+.copy-btn.copied{background:var(--success)}
+.expiry{font-size:.8rem;color:var(--text-muted);margin-bottom:1rem}
+.expiry i{color:var(--accent)}
+.shop-btn{display:block;width:100%;padding:.7rem;border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .3s;text-decoration:none;text-align:center}
+.shop-btn.primary{background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff}
+.shop-btn.primary:hover{transform:scale(1.02);box-shadow:0 8px 20px rgba(79,70,229,.4)}
+
+/* Carousel */
+.trending-section{padding:2.5rem 0;background:var(--card-bg);margin:1rem 0;border-radius:1rem}
+.trending-section h2{font-weight:800;margin-bottom:1.5rem}
+.carousel-item-custom{padding:1rem}
+.carousel-control-prev,.carousel-control-next{width:40px;height:40px;background:var(--primary);border-radius:50%;top:50%;transform:translateY(-50%);opacity:1}
+
+/* Footer */
+.offers-footer{background:var(--card-bg);border-top:1px solid var(--border);padding:2rem 0;margin-top:3rem;text-align:center;color:var(--text-muted)}
+
+@media(max-width:768px){
+  .flash-title{font-size:1.5rem}
+  .offers-grid{grid-template-columns:1fr}
+  .countdown-box{min-width:55px;padding:.5rem}
+  .countdown-box .num{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/"><i class="bi bi-bag-heart-fill me-2"></i>ClickNBuy</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navOffer">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navOffer">
+            <div class="d-flex gap-2">
+                <a href="/" class="nav-btn btn btn-outline-light"><i class="bi bi-house me-1"></i>Home</a>
+                <a href="/offers" class="nav-btn btn btn-light"><i class="bi bi-gift me-1"></i>Offers</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Flash Sale Banner -->
+<section class="flash-banner text-center">
+    <div class="container position-relative">
+        <span class="badge bg-dark bg-opacity-25 mb-3 px-3 py-2 fs-6"><i class="bi bi-lightning-charge-fill me-1"></i>FLASH SALE LIVE NOW</span>
+        <h1 class="flash-title">Mega Deals Bonanza!</h1>
+        <p class="flash-sub">Grab unbelievable discounts before time runs out</p>
+        <div class="countdown" id="countdown">
+            <div class="countdown-box"><div class="num" id="cd-hours">00</div><div class="label">Hours</div></div>
+            <div class="countdown-box"><div class="num" id="cd-mins">00</div><div class="label">Minutes</div></div>
+            <div class="countdown-box"><div class="num" id="cd-secs">00</div><div class="label">Seconds</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- Category Pills -->
+<section class="cat-section">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a class="cat-pill active" href="#all" onclick="filterOffers('all')"><i class="bi bi-grid"></i>All Deals</a>
+            <a class="cat-pill" href="#electronics" onclick="filterOffers('electronics')"><i class="bi bi-laptop"></i>Electronics</a>
+            <a class="cat-pill" href="#fashion" onclick="filterOffers('fashion')"><i class="bi bi-handbag"></i>Fashion</a>
+            <a class="cat-pill" href="#shoes" onclick="filterOffers('shoes')"><i class="bi bi-shoe-heel"></i>Shoes</a>
+            <a class="cat-pill" href="#grocery" onclick="filterOffers('grocery')"><i class="bi bi-cart4"></i>Grocery</a>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Offers Carousel -->
+<section class="container">
+    <div class="trending-section px-4">
+        <h2 class="text-center"><i class="bi bi-fire text-danger me-2"></i>Trending Offers</h2>
+        <div id="trendingCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="p-4 text-center text-white rounded-4" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+                                <h3 class="fw-bold mb-1"><i class="bi bi-lightning-charge-fill"></i> Extra &#8377;500 OFF on Electronics</h3>
+                                <p class="mb-2 opacity-75">Use code ELECTRO500 &bull; Min purchase &#8377;2999</p>
+                                <a href="/?category=Electronics" class="btn btn-light fw-bold rounded-pill px-4">Shop Now <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="p-4 text-center text-white rounded-4" style="background:linear-gradient(135deg,#f093fb,#f5576c)">
+                                <h3 class="fw-bold mb-1"><i class="bi bi-bag-heart-fill"></i> Buy 1 Get 1 Free on Fashion</h3>
+                                <p class="mb-2 opacity-75">Use code BOGO2024 &bull; All categories</p>
+                                <a href="/?category=Fashion" class="btn btn-light fw-bold rounded-pill px-4">Shop Now <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="p-4 text-center text-white rounded-4" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">
+                                <h3 class="fw-bold mb-1"><i class="bi bi-stars"></i> Flat 50% OFF on Shoes</h3>
+                                <p class="mb-2 opacity-75">Use code SHOE50 &bull; Top brands only</p>
+                                <a href="/?category=Sports" class="btn btn-light fw-bold rounded-pill px-4">Shop Now <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#trendingCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+            <button class="carousel-control-next" type="button" data-bs-target="#trendingCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+        </div>
+    </div>
+</section>
+
+<!-- Offer Cards Grid -->
+<section class="container">
+    <h2 class="fw-bold mt-4 mb-0"><i class="bi bi-tags-fill text-warning me-2"></i>All Offers</h2>
+    <div class="offers-grid" id="offersGrid">
+
+        <!-- Card 1 -->
+        <div class="offer-card" data-cat="shoes">
+            <div class="card-banner shoes"><span class="discount-badge">50% OFF</span><h3>Flat 50% OFF on Shoes</h3><p>Top brands &bull; Limited stock</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">SHOE50</span><button class="copy-btn" onclick="copyCoupon(this,'SHOE50')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 15 May 2026</p>
+                <a href="/?category=Sports" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="offer-card" data-cat="fashion">
+            <div class="card-banner bogo"><span class="discount-badge">BOGO</span><h3>Buy 1 Get 1 Free</h3><p>Fashion &amp; Accessories</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">BOGO2024</span><button class="copy-btn" onclick="copyCoupon(this,'BOGO2024')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 20 May 2026</p>
+                <a href="/?category=Fashion" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="offer-card" data-cat="electronics">
+            <div class="card-banner electronics"><span class="discount-badge">&#8377;500 OFF</span><h3>Extra &#8377;500 OFF on Electronics</h3><p>Min purchase &#8377;2999</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">ELECTRO500</span><button class="copy-btn" onclick="copyCoupon(this,'ELECTRO500')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 18 May 2026</p>
+                <a href="/?category=Electronics" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="offer-card" data-cat="grocery">
+            <div class="card-banner grocery"><span class="discount-badge">30% OFF</span><h3>30% OFF on Groceries</h3><p>Daily essentials &bull; Fresh produce</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">FRESH30</span><button class="copy-btn" onclick="copyCoupon(this,'FRESH30')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 25 May 2026</p>
+                <a href="/?category=Groceries" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="offer-card" data-cat="electronics">
+            <div class="card-banner flash"><span class="discount-badge">40% OFF</span><h3>Flash Deal: Headphones</h3><p>Wireless &amp; Noise Cancelling</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">AUDIO40</span><button class="copy-btn" onclick="copyCoupon(this,'AUDIO40')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 12 May 2026</p>
+                <a href="/?category=Audio" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="offer-card" data-cat="fashion">
+            <div class="card-banner mega"><span class="discount-badge">60% OFF</span><h3>Mega Fashion Sale</h3><p>Ethnic, Western &amp; Sportswear</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">STYLE60</span><button class="copy-btn" onclick="copyCoupon(this,'STYLE60')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 30 May 2026</p>
+                <a href="/?category=Fashion" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="offer-card" data-cat="electronics">
+            <div class="card-banner weekend"><span class="discount-badge">&#8377;1000 OFF</span><h3>Weekend Laptop Deals</h3><p>Top brands &bull; EMI available</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">LAPTOP1K</span><button class="copy-btn" onclick="copyCoupon(this,'LAPTOP1K')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 14 May 2026</p>
+                <a href="/?category=Computers" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="offer-card" data-cat="shoes">
+            <div class="card-banner shoes"><span class="discount-badge">&#8377;200 OFF</span><h3>Sneakers Fest</h3><p>Running, casual &amp; sports shoes</p></div>
+            <div class="card-body-custom">
+                <div class="coupon-row"><span class="coupon-code">SNEAK200</span><button class="copy-btn" onclick="copyCoupon(this,'SNEAK200')"><i class="bi bi-clipboard me-1"></i>Copy</button></div>
+                <p class="expiry"><i class="bi bi-clock me-1"></i>Expires: 22 May 2026</p>
+                <a href="/?category=Sports" class="shop-btn primary">Shop Now <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="offers-footer"><p class="mb-0">&copy; 2026 ClickNBuy. All rights reserved. <i class="bi bi-heart-fill text-danger"></i></p></footer>
+
+<!-- Theme Toggle -->
+<button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode"><i class="bi bi-moon-stars-fill"></i></button>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Countdown Timer - 8 hours from now
+(function(){
+  var end=new Date().getTime()+8*60*60*1000;
+  function tick(){
+    var now=new Date().getTime(),d=end-now;
+    if(d<0){document.getElementById('cd-hours').textContent='00';document.getElementById('cd-mins').textContent='00';document.getElementById('cd-secs').textContent='00';return;}
+    document.getElementById('cd-hours').textContent=String(Math.floor(d/3600000)).padStart(2,'0');
+    document.getElementById('cd-mins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
+    document.getElementById('cd-secs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');
+  }
+  tick();setInterval(tick,1000);
+})();
+
+// Copy Coupon
+function copyCoupon(btn,code){
+  navigator.clipboard.writeText(code).then(function(){
+    btn.innerHTML='<i class="bi bi-check2 me-1"></i>Copied!';btn.classList.add('copied');
+    setTimeout(function(){btn.innerHTML='<i class="bi bi-clipboard me-1"></i>Copy';btn.classList.remove('copied');},2000);
+  });
+}
+
+// Category Filter
+function filterOffers(cat){
+  document.querySelectorAll('.cat-pill').forEach(function(p){p.classList.remove('active')});
+  event.target.closest('.cat-pill').classList.add('active');
+  document.querySelectorAll('.offer-card').forEach(function(c){
+    if(cat==='all'||c.dataset.cat===cat){c.style.display='';}else{c.style.display='none';}
+  });
+}
+
+// Dark/Light Mode
+var toggle=document.getElementById('themeToggle');
+toggle.addEventListener('click',function(){
+  var d=document.documentElement;
+  if(d.getAttribute('data-theme')==='dark'){d.removeAttribute('data-theme');toggle.innerHTML='<i class="bi bi-moon-stars-fill"></i>';}
+  else{d.setAttribute('data-theme','dark');toggle.innerHTML='<i class="bi bi-sun-fill"></i>';}
+});
+</script>
+</body>
+</html>

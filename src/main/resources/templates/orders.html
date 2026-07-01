@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - ClickNBuy</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary-color: #10B981;
+            --accent-color: #F59E0B;
+            --danger-color: #EF4444;
+            --dark-color: #111827;
+            --gray-color: #6B7280;
+            --light-gray: #F3F4F6;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-color);
+            min-height: 100vh;
+        }
+
+        .orders-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .order-header {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .order-items {
+            padding: 1rem;
+        }
+
+        .order-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .order-footer {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-paid {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .status-pending {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .status-delivered {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .back-btn {
+            color: var(--white);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-4px);
+            color: var(--white);
+        }
+
+        /* Notification Bell */
+        .notif-bell-wrapper { position: relative; display: inline-block; }
+        .notif-bell-btn {
+            background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3);
+            color: #fff; border-radius: 0.75rem; padding: 0.5rem 0.75rem;
+            font-size: 1.1rem; cursor: pointer; position: relative;
+            transition: all 0.2s; backdrop-filter: blur(8px);
+        }
+        .notif-bell-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+        .notif-badge {
+            position: absolute; top: -6px; right: -6px;
+            background: linear-gradient(135deg,#ef4444,#f59e0b); color: #fff;
+            font-size: 0.65rem; font-weight: 700; min-width: 20px; height: 20px;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            padding: 0 5px; box-shadow: 0 2px 8px rgba(239,68,68,0.5);
+            animation: notifPulse 2s ease-in-out infinite; border: 2px solid rgba(79,70,229,0.8);
+        }
+        .notif-badge.hidden { display: none; }
+        @keyframes notifPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+        @keyframes bellRing { 0%{transform:rotate(0)} 10%{transform:rotate(14deg)} 20%{transform:rotate(-14deg)} 30%{transform:rotate(10deg)} 40%{transform:rotate(-8deg)} 50%{transform:rotate(4deg)} 60%,100%{transform:rotate(0)} }
+        .bell-ringing i { animation: bellRing 0.8s ease-in-out; }
+
+        /* Notification Panel */
+        .notif-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:9998; opacity:0; visibility:hidden; transition:all 0.3s; }
+        .notif-overlay.open { opacity:1; visibility:visible; }
+        .notif-panel { position:fixed; top:0; right:-420px; width:400px; max-width:90vw; height:100vh; background:#fff; box-shadow:-8px 0 30px rgba(0,0,0,0.15); z-index:9999; transition:right 0.35s cubic-bezier(0.4,0,0.2,1); display:flex; flex-direction:column; }
+        .notif-panel.open { right:0; }
+        .notif-panel-header { background:linear-gradient(135deg,var(--primary-color),var(--primary-hover)); color:#fff; padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between; }
+        .notif-panel-header h5 { margin:0; font-weight:700; font-size:1.1rem; }
+        .notif-panel-actions { display:flex; gap:0.5rem; }
+        .notif-panel-actions button { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:0.5rem; padding:0.35rem 0.75rem; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .notif-panel-actions button:hover { background:rgba(255,255,255,0.25); }
+        .notif-panel-body { flex:1; overflow-y:auto; }
+        .notif-empty { text-align:center; padding:3rem 1.5rem; color:var(--gray-color); }
+        .notif-empty i { font-size:3rem; margin-bottom:1rem; opacity:0.4; }
+        .notif-item { padding:1rem 1.5rem; border-bottom:1px solid #f0f0f0; transition:background 0.15s; cursor:pointer; display:flex; gap:0.85rem; align-items:flex-start; }
+        .notif-item:hover { background:#f8f9ff; }
+        .notif-item.unread { background:#f0f0ff; border-left:3px solid var(--primary-color); }
+        .notif-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem; }
+        .notif-icon.order-update { background:linear-gradient(135deg,#dbeafe,#bfdbfe); color:#2563eb; }
+        .notif-icon.payment { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .notif-icon.system { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .notif-content { flex:1; min-width:0; }
+        .notif-content .notif-title { font-weight:700; font-size:0.9rem; margin-bottom:0.2rem; }
+        .notif-content .notif-msg { font-size:0.82rem; color:var(--gray-color); line-height:1.4; margin-bottom:0.3rem; }
+        .notif-content .notif-time { font-size:0.72rem; color:#9ca3af; }
+        .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--primary-color); flex-shrink:0; margin-top:6px; }
+        .notif-dot.read { background:transparent; }
+        .notif-toast { position:fixed; top:80px; right:20px; z-index:10000; background:#fff; border-radius:1rem; box-shadow:0 10px 40px rgba(0,0,0,0.15); padding:1rem 1.25rem; max-width:360px; display:flex; gap:0.75rem; border-left:4px solid var(--primary-color); animation:slideInRight 0.4s cubic-bezier(0.4,0,0.2,1),fadeOut 0.4s ease 4.6s forwards; }
+        @keyframes slideInRight { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+        @keyframes fadeOut { to{transform:translateX(120%);opacity:0} }
+    </style>
+</head>
+
+<body>
+    <!-- Orders Header -->
+    <div class="orders-header">
+        <div class="container">
+            <div class="d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start">
+                    <a href="/" class="back-btn">
+                        <i class="bi bi-arrow-left-short fs-4"></i>
+                        <span>Back to Home</span>
+                    </a>
+                    <div class="notif-bell-wrapper">
+                        <button class="notif-bell-btn" onclick="toggleNotifPanel()">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="notif-badge hidden" id="notifBadge">0</span>
+                        </button>
+                    </div>
+                </div>
+                <h1 class="display-6 fw-bold mb-0">My Orders</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Content -->
+    <div class="container mb-5">
+        <div th:if="${orders.empty}" class="text-center py-5">
+            <i class="bi bi-bag-x fs-1 text-muted"></i>
+            <h3 class="mt-3">No orders yet</h3>
+            <p class="text-muted">Start shopping to see your orders here</p>
+            <a href="/" class="btn btn-primary">Browse Products</a>
+        </div>
+
+        <div th:unless="${orders.empty}" class="row">
+            <div class="col-12">
+                <div class="order-card" th:each="order : ${orders}">
+                    <!-- Order Header -->
+                    <div class="order-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted">Order ID</p>
+                                <p class="mb-0 fw-semibold" th:text="${order.razorpayOrderId}"></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted">Order Date</p>
+                                <p class="mb-0" th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}"></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-1 text-muted">Tracking #</p>
+                                <p class="mb-0 fw-semibold text-primary">
+                                    <i class="bi bi-truck me-1"></i>
+                                    <span th:text="${order.trackingNumber != null ? order.trackingNumber : 'Pending'}"></span>
+                                </p>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.status)}"
+                                      th:text="${order.status}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <div class="order-item" th:each="item : ${order.orderItems}">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img th:src="${item.product.imageLink}" th:alt="${item.product.name}"
+                                            class="product-image">
+                                        <div>
+                                            <h6 class="mb-1" th:text="${item.product.name}"></h6>
+                                            <p class="mb-0 text-muted">
+                                                <span th:text="${item.quantity}"></span> × ₹<span
+                                                    th:text="${#numbers.formatDecimal(item.price, 0, 2)}"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <p class="mb-0 fw-semibold">₹<span
+                                            th:text="${#numbers.formatDecimal(item.quantity * item.price, 0, 2)}"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Footer -->
+                    <div class="order-footer">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p class="mb-0"><strong>Delivery Address:</strong></p>
+                                <p class="mb-0 text-muted" th:text="${order.deliveryAddress}"></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="mb-0"><strong>Expected Delivery:</strong></p>
+                                <p class="mb-0 text-success fw-semibold" th:text="${order.expectedDeliveryDate != null ? #temporals.format(order.expectedDeliveryDate, 'dd MMM yyyy') : 'Calculating...'}"></p>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                <p class="mb-1 text-muted">Total Amount</p>
+                                <p class="mb-0 fs-5 fw-bold">₹<span
+                                        th:text="${#numbers.formatDecimal(order.totalAmount, 0, 2)}"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Notification Overlay -->
+<div class="notif-overlay" id="notifOverlay" onclick="toggleNotifPanel()"></div>
+<!-- Notification Panel -->
+<div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-header">
+        <h5><i class="bi bi-bell-fill me-2"></i>Notifications</h5>
+        <div class="notif-panel-actions">
+            <button onclick="markAllRead()">Mark all read</button>
+            <button onclick="toggleNotifPanel()"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+    <div class="notif-panel-body" id="notifPanelBody">
+        <div class="notif-empty" id="notifEmpty"><i class="bi bi-bell-slash"></i><p>No notifications yet</p></div>
+    </div>
+</div>
+
+<!-- SockJS & STOMP -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<!-- Notification System -->
+<script>
+(function() {
+    window.toggleNotifPanel = function() {
+        var p = document.getElementById('notifPanel'), o = document.getElementById('notifOverlay');
+        if (p.classList.contains('open')) { p.classList.remove('open'); o.classList.remove('open'); }
+        else { p.classList.add('open'); o.classList.add('open'); loadNotifications(); }
+    };
+    function updateBadge(count) {
+        var badges = document.querySelectorAll('.notif-badge');
+        badges.forEach(function(b) { if(count>0){b.textContent=count>99?'99+':count;b.classList.remove('hidden');}else{b.classList.add('hidden');} });
+    }
+    function ringBell() {
+        document.querySelectorAll('.notif-bell-btn').forEach(function(b){b.classList.add('bell-ringing');setTimeout(function(){b.classList.remove('bell-ringing');},1000);});
+    }
+    function escapeHtml(s){if(!s)return'';var d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML;}
+    function timeAgo(ds){if(!ds)return'';var d=new Date(ds),n=new Date(),s=Math.floor((n-d)/1000);if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+    function showNotifToast(data) {
+        document.querySelectorAll('.notif-toast').forEach(function(e){e.remove();});
+        var ic='bi-bell-fill',bg='#dbeafe',cl='#2563eb';
+        if(data.type==='PAYMENT'){ic='bi-credit-card-fill';bg='#d1fae5';cl='#059669';}
+        else if(data.type==='ORDER_UPDATE'){ic='bi-truck';bg='#dbeafe';cl='#2563eb';}
+        var t=document.createElement('div');t.className='notif-toast';
+        t.innerHTML='<div style="width:40px;height:40px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="bi '+ic+'" style="color:'+cl+';font-size:1.1rem"></i></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:0.9rem;margin-bottom:2px">'+escapeHtml(data.title)+'</div><div style="font-size:0.82rem;color:#6b7280;line-height:1.4">'+escapeHtml(data.message)+'</div></div>';
+        t.onclick=function(){toggleNotifPanel();t.remove();};
+        document.body.appendChild(t);setTimeout(function(){if(t.parentNode)t.remove();},5000);
+    }
+    function loadNotifications() {
+        fetch('/api/notifications').then(function(r){return r.json();}).then(function(notifs){
+            var body=document.getElementById('notifPanelBody'),empty=document.getElementById('notifEmpty');
+            if(!notifs||notifs.length===0){body.innerHTML='';body.appendChild(empty);empty.style.display='block';return;}
+            empty.style.display='none';var html='';
+            notifs.forEach(function(n){
+                var ic='bi-bell-fill',tc='system';
+                if(n.type==='ORDER_UPDATE'){ic='bi-truck';tc='order-update';}else if(n.type==='PAYMENT'){ic='bi-credit-card-fill';tc='payment';}
+                html+='<div class="notif-item '+(n.read?'':'unread')+'" onclick="markNotifRead('+n.id+',this)"><div class="notif-icon '+tc+'"><i class="bi '+ic+'"></i></div><div class="notif-content"><div class="notif-title">'+escapeHtml(n.title)+'</div><div class="notif-msg">'+escapeHtml(n.message)+'</div><div class="notif-time">'+timeAgo(n.createdAt)+'</div></div><div class="notif-dot '+(n.read?'read':'')+'"></div></div>';
+            });
+            body.innerHTML=html;
+        }).catch(function(e){console.error('Load notifs failed',e);});
+    }
+    window.markNotifRead=function(id,el){
+        fetch('/api/notifications/'+id+'/read',{method:'POST'}).then(function(){if(el){el.classList.remove('unread');var d=el.querySelector('.notif-dot');if(d)d.classList.add('read');}refreshUnreadCount();});
+    };
+    window.markAllRead=function(){
+        fetch('/api/notifications/read-all',{method:'POST'}).then(function(){updateBadge(0);document.querySelectorAll('.notif-item.unread').forEach(function(i){i.classList.remove('unread');var d=i.querySelector('.notif-dot');if(d)d.classList.add('read');});});
+    };
+    function refreshUnreadCount(){fetch('/api/notifications/unread-count').then(function(r){return r.json();}).then(function(d){updateBadge(d.count||0);}).catch(function(){});}
+    function connectWebSocket(){
+        try{
+            var socket=new SockJS('/ws'),client=Stomp.over(socket);client.debug=null;
+            client.connect({},function(){
+                client.subscribe('/user/queue/notifications',function(msg){
+                    var data=JSON.parse(msg.body);showNotifToast(data);ringBell();refreshUnreadCount();
+                    if(document.getElementById('notifPanel').classList.contains('open'))loadNotifications();
+                });
+            },function(){setTimeout(connectWebSocket,5000);});
+        }catch(e){setTimeout(connectWebSocket,5000);}
+    }
+    document.addEventListener('DOMContentLoaded',function(){refreshUnreadCount();connectWebSocket();});
+})();
+</script>
+
+</body>
+
+</html>
